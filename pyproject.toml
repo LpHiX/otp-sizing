@@ -1,0 +1,15 @@
+[project]
+name = "otp-sizing"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "coolprop>=8.0.0",
+    "ipykernel>=7.3.0",
+    "matplotlib>=3.11.1",
+    "numpy>=2.5.1",
+    "pint>=0.25.3",
+    "rocketcea>=1.2.3",
+    "scipy>=1.18.0",
+]
