@@ -10,6 +10,7 @@ dependencies = [
     "matplotlib>=3.11.1",
     "numpy>=2.5.1",
     "pint>=0.25.3",
+    "pyfluids>=4.0.0",
     "rocketcea>=1.2.3",
     "scipy>=1.18.0",
 ]

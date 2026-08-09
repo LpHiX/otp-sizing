@@ -458,6 +458,7 @@ dependencies = [
     { name = "matplotlib" },
     { name = "numpy" },
     { name = "pint" },
+    { name = "pyfluids" },
     { name = "rocketcea" },
     { name = "scipy" },
 ]
@@ -469,6 +470,7 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.11.1" },
     { name = "numpy", specifier = ">=2.5.1" },
     { name = "pint", specifier = ">=0.25.3" },
+    { name = "pyfluids", specifier = ">=4.0.0" },
     { name = "rocketcea", specifier = ">=1.2.3" },
     { name = "scipy", specifier = ">=1.18.0" },
 ]
@@ -636,6 +638,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/1b/7d/92392ff7815c21062bea51aa7b87d45576f649f16458d78b7cf94b9ab2e6/pycparser-3.0.tar.gz", hash = "sha256:600f49d217304a5902ac3c37e1281c9fe94e4d0489de643a9504c5cdfdfc6b29", size = 103492, upload-time = "2026-01-21T14:26:51.89Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0c/c3/44f3fbbfa403ea2a7c779186dc20772604442dde72947e7d01069cbe98e3/pycparser-3.0-py3-none-any.whl", hash = "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992", size = 48172, upload-time = "2026-01-21T14:26:50.693Z" },
+]
+
+[[package]]
+name = "pyfluids"
+version = "4.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "coolprop" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7d/39/76ff230fa4fe968c771a5740c0e07db8c5001daebc57b30c5b3b55c5477c/pyfluids-4.0.0.tar.gz", hash = "sha256:5aee82389346580c984a62319595dc8ba1b5df9c741d87a6f5eb6dd9f835e36a", size = 16142, upload-time = "2026-06-30T14:55:36.791Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/89/9b/d7a6eeada10a48238df53e7ee01b91ac4fe2141952ce5ffe1b2f825fc444/pyfluids-4.0.0-py3-none-any.whl", hash = "sha256:e8da0a270276d9cec86a46d98d88384ad9ee85af63b431fb389721e71887694f", size = 24073, upload-time = "2026-06-30T14:55:35.917Z" },
 ]
 
 [[package]]
