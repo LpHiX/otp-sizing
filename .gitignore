@@ -219,3 +219,6 @@ __marimo__/
 
 # testbed data (fetch with: uv run python testbed/fetch_data.py)
 testbed/data/
+
+*.h5
+*.wav
