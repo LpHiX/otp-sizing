@@ -25,7 +25,6 @@ class TurbineChoices:
     beta_deg: float = q("degree", "nozzle angle to the circumferential direction")
     doa: float = q("-", "arc degree of admission")
     n_nozzles: float = q("-", "number of stator nozzles")
-    p_ratio: float = q("-", "nozzle stator pressure ratio")
 
 @component
 class TurbineGeometry:
