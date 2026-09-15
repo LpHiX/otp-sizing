@@ -2,7 +2,7 @@ import numpy as np
 from pyfluids import Input
 
 from ..core.component import component
-from ..core.units import P_A_BAR, K_TO_C, g
+from ..core.units import P_A_BAR, K_TO_C, R_GAS, g
 from .records import ChamberGeometry, EnginePerformance, InjectorGeometry, PropCEA, EngineCalibration
 
 @component
@@ -13,9 +13,11 @@ class Engine:
     calib: EngineCalibration
 
     def point_performance(self, p_c_bar: float,  p_a_bar: float, OF: float) -> EnginePerformance:
-        isp_vac, cstar_theory, t_c = self.propcea.cea.get_IvacCstrTc(Pc=p_c_bar, MR=OF, eps=self.chamber.eps, frozen=1, frozenAtThroat=1)
+        isp_vac, cstar_theory, t_c, mw_exit, gam_exit = self.propcea.cea.get_IvacCstrTc_exitMwGam(Pc=p_c_bar, MR=OF, eps=self.chamber.eps, frozen=1, frozenAtThroat=1)
         isp_sl = self.propcea.cea.estimate_Ambient_Isp(Pc=p_c_bar, MR=OF, eps=self.chamber.eps, Pamb=P_A_BAR)[0] * self.calib.eff_cstar
         isp_amb = self.propcea.cea.estimate_Ambient_Isp(Pc=p_c_bar, MR=OF, eps=self.chamber.eps, Pamb=p_a_bar)[0] * self.calib.eff_cstar
+
+        R_exit = R_GAS / mw_exit
 
         cstar = cstar_theory * self.calib.eff_cstar
         mdot = self.chamber.d_t**2 * np.pi / 4 * p_c_bar * 1e5 / cstar
@@ -72,4 +74,7 @@ class Engine:
             p_fuel_preinj=p_fuel_preinj,
             p_ox_preinj=p_ox_preinj,
             stiffness_fuel=stiffness_fuel,
-            stiffness_ox=stiffness_ox)
+            stiffness_ox=stiffness_ox,
+            mw_exit=mw_exit,
+            gam_exit=gam_exit,
+            R_exit=R_exit)

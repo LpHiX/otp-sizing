@@ -72,6 +72,9 @@ class EnginePerformance:
     p_ox_preinj: float = q("bar", "oxidizer pre-injector pressure")
     stiffness_fuel: float = q("-", "fuel injector stiffness")
     stiffness_ox: float = q("-", "oxidizer injector stiffness")
+    mw_exit: float = q("g/mol", "molecular weight of exhaust")
+    gam_exit: float = q("-", "ratio of specific heats of exhaust")
+    R_exit: float = q("J/kg-K", "specific gas constant of exhaust")
 
 @component
 class PropCEA:

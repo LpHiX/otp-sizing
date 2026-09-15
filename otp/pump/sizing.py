@@ -10,6 +10,8 @@ def size_pump(pump_req: PumpRequirements, pump_choices: PumpChoices, sizing_meth
     d_1 = d_inlet * pump_choices.d1_over_d0
     omega = pump_choices.rpm * 2 * np.pi / 60
 
+    d_2 = 0 # To stop stupid unbound comment
+
     def geometry_from_d2(d_2) -> PumpGeometry:
         u_2 = omega * d_2 / 2
         v_3 = pump_choices.flow_coeff_throat * u_2
