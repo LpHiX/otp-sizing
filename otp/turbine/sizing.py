@@ -1,9 +1,11 @@
 import numpy as np
 
 from .records import TurbineRequirements, TurbineChoices, TurbineGeometry, TurbineInletGas
+from .analysis import nozzle_velocity_coeff, rotor_velocity_coeff, windage_power
+from ..core.units import BAR
 import scipy.optimize as opt
 
-def size_turbine(turbine_req: TurbineRequirements, turbine_choices: TurbineChoices, turbine_inlet_gas: TurbineInletGas, mdot: float, max_iter: int, tol:float = 1e-6) -> TurbineGeometry | None:
+def size_turbine(turbine_req: TurbineRequirements, turbine_choices: TurbineChoices, turbine_inlet_gas: TurbineInletGas, mdot: float, max_iter: int=20, tol:float = 1e-2) -> TurbineGeometry:
     P_target = turbine_req.P_req
     rpm = turbine_req.rpm
     beta_deg = turbine_choices.beta_deg
@@ -32,9 +34,7 @@ def size_turbine(turbine_req: TurbineRequirements, turbine_choices: TurbineChoic
 
         a_throat, a_3, rho_throat, rho_3, eps, p_ratio, M3 = stator(turbine_inlet_gas, c3_ideal)
 
-        phi_n = np.sqrt(
-            1 - (0.0029 * M3**3 - 0.0502 * M3**2 + 0.2241 * M3 - 0.0877)
-        )
+        phi_n = nozzle_velocity_coeff(M3)
         c3_real = phi_n * c3_ideal
         c3m_real = c3_real * np.sin(beta)
         c3u_real = c3_real * np.cos(beta)
@@ -43,35 +43,20 @@ def size_turbine(turbine_req: TurbineRequirements, turbine_choices: TurbineChoic
         dB = (180 - beta_deg * 2)
         w3u_real = c3u_real - u
         w3_real = np.sqrt(w3u_real**2 + c3m_real**2)
-        Mr =  w3_real / a_throat
-        phi_r = (
-            0.957
-            - 0.000362 * dB        - 0.0258 * Mr
-            + 0.00000639 * dB**2   + 0.0674 * Mr**2
-            - 0.0000000753 * dB**3 - 0.043 * Mr**3
-            - 0.000238 * dB * Mr
-            + 0.00000145 * dB**2 * Mr
-            + 0.0000425 * dB * Mr**2
-        )
+        Mr =  w3_real / a_3
+        phi_r = rotor_velocity_coeff(dB, Mr)
 
         w4_real = w3_real * phi_r
         w4u_real = w4_real * np.cos(beta)
-        c4u_real = u - w4u_real 
+        c4u_real = u - w4u_real
 
-        p_v = (1.85 / 2) * (
-            (1 - doa) * rho_3 * (rpm / 60)**3
-            * d_mean**4 * 4.5 * blade_height
-        )
+        p_v = windage_power(doa, rho_3, rpm, d_mean, blade_height)
 
         P_shaft = mdot * u * (c3u_real - c4u_real) - p_v
         if P_shaft <= 0:
             raise ValueError(
                 f"No net power: windage {p_v:.0f} W exceeds the Euler work. "
                 f"Lower the admission fraction or the speed.")
-
-    
-        P_req *= P_target / P_shaft
-
 
         if abs(P_shaft - P_target) <= tol * P_target:
             A_throat_total = mdot / (rho_throat * a_throat)
@@ -132,24 +117,25 @@ def stator_thermal_gg(turbine_inlet_gas: TurbineInletGas, c3_ideal: float, eps_b
     return a_throat, a_3, rho_throat, rho_3, eps, p_ratio, M3
 
 def stator_thermal_ideal(turbine_inlet_gas: TurbineInletGas, c3_ideal: float) -> tuple[float, float, float, float, float, float, float]:
-    p01 = turbine_inlet_gas.p01
+    p01 = turbine_inlet_gas.p01 * BAR   # bar -> Pa, once, so every density below is SI
     T01 = turbine_inlet_gas.T01
     R = turbine_inlet_gas.R
     gamma = turbine_inlet_gas.gamma
     cp = gamma * R / (gamma - 1)
 
     T3 = T01 - 0.5 * c3_ideal**2 / cp
-    if T3 < 0:
+    if T3 <= 0:
         raise ValueError(f"c3_ideal={c3_ideal:.1f} m/s exceeds the total enthalpy of this gas")
     a_3 = np.sqrt(gamma * R * T3)
     M3 = c3_ideal / a_3
-    p3 = p01 / ((1 + 0.5 * (gamma - 1) * M3**2) ** (gamma / (gamma - 1)))
+    p_ratio = (1 + 0.5 * (gamma - 1) * M3**2) ** (gamma / (gamma - 1))
+    p3 = p01 / p_ratio
     rho_3 = p3 / (R * T3)
-    p_ratio = p01 / p3
 
     T_throat = T01 / (1 + 0.5 * (gamma - 1))
+    p_throat = p01 * (2 / (gamma + 1)) ** (gamma / (gamma - 1))
     a_throat = np.sqrt(gamma * R * T_throat)
-    rho_throat = p01*1e5 / (R * T_throat)
-    
+    rho_throat = p_throat / (R * T_throat)
+
     eps = (0.5 * (gamma + 1))**(-(gamma + 1) / (2 * (gamma - 1))) * (1 + 0.5 * (gamma - 1) * M3**2)**((gamma + 1) / (2 * (gamma - 1))) / M3
     return a_throat, a_3, rho_throat, rho_3, eps, p_ratio, M3

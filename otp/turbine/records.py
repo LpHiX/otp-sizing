@@ -45,7 +45,51 @@ class TurbineInletGas:
     R: float = q("J/kgK", "gas constant")
     gamma: float = q("-", "heat capacity ratio")
     model: PropCEA | None
-    OF: float = q("-" "OF ratio if applicable")
+    OF: float = q("-", "OF ratio if applicable")
 
-# @component
-# class TurbinePerformance:
+@component
+class TurbinePerformance:
+    gas: TurbineInletGas
+    rpm: float = q("RPM", "shaft rotational speed")
+    omega: float = q("rad/s", "shaft rotational speed in rad/s")
+    u: float = q("m/s", "mean blade speed")
+    mdot: float = q("kg/s", "turbine mass flow")
+    p_amb_bar: float = q("bar", "turbine exhaust ambient pressure")
+
+    # Stator gas state
+    eps: float = q("-", "nozzle exit over throat area ratio")
+    p_ratio: float = q("-", "nozzle stator pressure ratio")
+    M3: float = q("-", "nozzle exit Mach number")
+    Mr: float = q("-", "rotor inlet relative Mach number")
+    a_throat: float = q("m/s", "sonic velocity at nozzle throat")
+    a_3: float = q("m/s", "sonic velocity at nozzle exit")
+    rho_throat: float = q("kg/m^3", "density at nozzle throat")
+    rho_3: float = q("kg/m^3", "density at nozzle exit")
+
+    # Velocity triangles
+    phi_n: float = q("-", "nozzle velocity coefficient")
+    phi_r: float = q("-", "rotor velocity coefficient")
+    c3_ideal: float = q("m/s", "isentropic nozzle exit velocity")
+    c3_real: float = q("m/s", "real nozzle exit velocity")
+    c3u_real: float = q("m/s", "nozzle exit tangential velocity")
+    c3m_real: float = q("m/s", "nozzle exit meridional velocity")
+    w3_real: float = q("m/s", "rotor inlet relative velocity")
+    w3u_real: float = q("m/s", "rotor inlet relative tangential velocity")
+    w4_real: float = q("m/s", "rotor exit relative velocity")
+    w4u_real: float = q("m/s", "rotor exit relative tangential velocity")
+    c4u_real: float = q("m/s", "rotor exit absolute tangential velocity")
+
+    # Work and efficiency
+    deltah_useful: float = q("J/kg", "useful specific work", alt=("kJ/kg", lambda x: x / 1000))
+    deltah_is_ta: float = q("J/kg", "isentropic total-to-ambient specific work", alt=("kJ/kg", lambda x: x / 1000))
+    c_0: float = q("m/s", "isentropic spouting velocity")
+    u_over_c0: float = q("-", "blade-jet speed ratio")
+    eta_is_ta: float = q("-", "total-to-ambient isentropic efficiency")
+    P_euler: float = q("W", "Euler power before windage", alt=("kW", lambda x: x / 1000))
+    P_windage: float = q("W", "partial-admission windage loss", alt=("kW", lambda x: x / 1000))
+    P_shaft: float = q("W", "turbine shaft power", alt=("kW", lambda x: x / 1000))
+    torque: float = q("N*m", "turbine torque")
+
+    # Consistency check between the choked throat and station 3 continuity
+    mdot_continuity: float = q("kg/s", "mass flow implied by blade height and the station 3 state")
+    continuity_ratio: float = q("-", "mdot_continuity over mdot, 1.0 if geometry is self-consistent")
