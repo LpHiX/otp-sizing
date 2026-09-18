@@ -3,7 +3,7 @@ from rocketcea.cea_obj_w_units import CEA_Obj
 from pyfluids import Fluid, FluidsList, Input
 
 
-from ..core.component import component, q
+from ..core.component import component, q, group
 from ..propellants.propellant import Propellant
 from ..core.units import BAR, K_TO_C, P_A_BAR, g
 
@@ -47,34 +47,39 @@ class EngineCalibration:
 
 @component
 class EnginePerformance:
-    fuel: Propellant
-    oxidizer: Propellant
-    p_c_bar: float = q("bar", "chamber pressure")
-    p_a_bar: float = q("bar", "ambient pressure")
-    OF: float = q("-", "mixture ratio")
-    F_amb: float = q("N", "delivered thrust", alt=("kN", lambda x: x / 1000))
-    F_vac: float = q("N", "delivered thrust in vacuum", alt=("kN", lambda x: x / 1000))
-    F_sl: float = q("N", "delivered thrust at sea level", alt=("kN", lambda x: x / 1000))
-    isp_amb: float = q("s", "specific impulse at ambient pressure")
-    isp_vac: float = q("s", "specific impulse")
-    isp_sl: float = q("s", "specific impulse at sea level")
-    cstar: float = q("m/s", "characteristic velocity")
-    T_c: float = q("K", "chamber temperature", alt=("C", lambda x: x + K_TO_C))
-    mdot: float = q("kg/s", "total mass flow")
-    mdot_ox: float = q("kg/s", "oxidiser mass flow")
-    mdot_fuel: float = q("kg/s", "fuel mass flow")
-    Cf_amb: float = q("-", "thrust coefficient at ambient pressure")
-    Cf_vac: float = q("-", "thrust coefficient in vacuum")
-    Cf_sl: float = q("-", "thrust coefficient at sea level")
-    p_fuel_injdp: float = q("bar", "fuel injector pressure drop")
-    p_ox_injdp: float = q("bar", "oxidizer injector pressure drop")
-    p_fuel_preinj: float = q("bar", "fuel pre-injector pressure")
-    p_ox_preinj: float = q("bar", "oxidizer pre-injector pressure")
-    stiffness_fuel: float = q("-", "fuel injector stiffness")
-    stiffness_ox: float = q("-", "oxidizer injector stiffness")
-    mw_exit: float = q("g/mol", "molecular weight of exhaust")
-    gam_exit: float = q("-", "ratio of specific heats of exhaust")
-    R_exit: float = q("J/kg-K", "specific gas constant of exhaust")
+    with group("Inputs"):
+        fuel: Propellant = q("fuel")
+        oxidizer: Propellant = q("oxidizer")
+        p_c_bar: float = q("bar", "chamber pressure")
+        p_a_bar: float = q("bar", "ambient pressure")
+        OF: float = q("-", "mixture ratio")
+    with group("Thrust and ISP"):
+        F_amb: float = q("N", "delivered thrust", alt=("kN", lambda x: x / 1000))
+        F_vac: float = q("N", "delivered thrust in vacuum", alt=("kN", lambda x: x / 1000))
+        F_sl: float = q("N", "delivered thrust at sea level", alt=("kN", lambda x: x / 1000))
+        isp_amb: float = q("s", "specific impulse at ambient pressure")
+        isp_vac: float = q("s", "specific impulse")
+        isp_sl: float = q("s", "specific impulse at sea level")
+    with group("Mass flow rates"):
+        cstar: float = q("m/s", "characteristic velocity")
+        mdot: float = q("kg/s", "total mass flow")
+        mdot_ox: float = q("kg/s", "oxidiser mass flow")
+        mdot_fuel: float = q("kg/s", "fuel mass flow")
+        Cf_amb: float = q("-", "thrust coefficient at ambient pressure")
+        Cf_vac: float = q("-", "thrust coefficient in vacuum")
+        Cf_sl: float = q("-", "thrust coefficient at sea level")
+    with group("Injector pressures"):
+        p_fuel_injdp: float = q("bar", "fuel injector pressure drop")
+        p_ox_injdp: float = q("bar", "oxidizer injector pressure drop")
+        p_fuel_preinj: float = q("bar", "fuel pre-injector pressure")
+        p_ox_preinj: float = q("bar", "oxidizer pre-injector pressure")
+        stiffness_fuel: float = q("-", "fuel injector stiffness")
+        stiffness_ox: float = q("-", "oxidizer injector stiffness")
+    with group("Gas properties"):
+        T_c: float = q("K", "chamber temperature", alt=("C", lambda x: x + K_TO_C))
+        mw_exit: float = q("g/mol", "molecular weight of exhaust")
+        gam_exit: float = q("-", "ratio of specific heats of exhaust")
+        R_exit: float = q("J/kg-K", "specific gas constant of exhaust")
 
 @component
 class PropCEA:

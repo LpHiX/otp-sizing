@@ -62,7 +62,6 @@ class Engine:
             isp_vac=isp_vac,
             isp_sl=isp_sl,
             cstar=cstar,
-            T_c=t_c,
             mdot=mdot,
             mdot_ox=mdot_ox,
             mdot_fuel=mdot_fuel,
@@ -75,6 +74,7 @@ class Engine:
             p_ox_preinj=p_ox_preinj,
             stiffness_fuel=stiffness_fuel,
             stiffness_ox=stiffness_ox,
+            T_c=t_c,
             mw_exit=mw_exit,
             gam_exit=gam_exit,
             R_exit=R_exit)

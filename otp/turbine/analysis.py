@@ -7,7 +7,8 @@ from .records import (TurbineRequirements, TurbineChoices, TurbineGeometry,
                       TurbineInletGas, TurbinePerformance)
 
 
-def gas_state_at_eps(gas: TurbineInletGas, eps: float) -> tuple[float, float, float, float, float, float, float]:
+
+def gas_state_at_eps(gas: TurbineInletGas, eps: float) -> tuple[float, float, float, float, float, float, float, float, float, float, float]:
     if gas.model is not None:
         cea, p01, OF = gas.model.cea, gas.p01, gas.OF
         _, a_throat, a_3 = cea.get_SonicVelocities(Pc=p01, MR=OF, eps=eps)
@@ -30,12 +31,13 @@ def gas_state_at_eps(gas: TurbineInletGas, eps: float) -> tuple[float, float, fl
     c3_ideal = M3 * a_3
     p_ratio = (1 + 0.5 * (gamma - 1) * M3**2) ** (gamma / (gamma - 1))
     rho_3 = (p01 / p_ratio) / (R * T3)
+    p3 = p01 / p_ratio / BAR
 
     T_throat = T01 / (1 + 0.5 * (gamma - 1))
     p_throat = p01 * (2 / (gamma + 1)) ** (gamma / (gamma - 1))
     a_throat = np.sqrt(gamma * R * T_throat)
     rho_throat = p_throat / (R * T_throat)
-    return a_throat, a_3, rho_throat, rho_3, p_ratio, M3, c3_ideal
+    return a_throat, a_3, rho_throat, rho_3, p_ratio, M3, c3_ideal, p_throat, T_throat, p3, T3
 
 
 def deltah_isentropic_ta(gas: TurbineInletGas, p_amb_bar: float) -> float:
@@ -82,7 +84,7 @@ class Turbine:
         u = omega * self.geom.d_mean / 2
 
         eps = self.geom.A_3_total / self.geom.A_throat_total
-        a_throat, a_3, rho_throat, rho_3, p_ratio, M3, c3_ideal = gas_state_at_eps(gas, eps)
+        a_throat, a_3, rho_throat, rho_3, p_ratio, M3, c3_ideal, p_throat, T_throat, p3, T3 = gas_state_at_eps(gas, eps)
 
         mdot = rho_throat * a_throat * self.geom.A_throat_total
 
@@ -115,8 +117,7 @@ class Turbine:
 
         return TurbinePerformance(
             gas=gas, rpm=rpm, omega=omega, u=u, mdot=mdot, p_amb_bar=p_amb_bar,
-            eps=eps, p_ratio=p_ratio, M3=M3, Mr=Mr,
-            a_throat=a_throat, a_3=a_3, rho_throat=rho_throat, rho_3=rho_3,
+            eps=eps,p_ratio=p_ratio,p01=gas.p01,T01=gas.T01,p_throat=p_throat,T_throat=T_throat,a_throat=a_throat,rho_throat=rho_throat,p3=p3,T3=T3,M3=M3,Mr=Mr,a_3=a_3,rho_3=rho_3,
             phi_n=phi_n, phi_r=phi_r,
             c3_ideal=c3_ideal, c3_real=c3_real, c3u_real=c3u_real, c3m_real=c3m_real,
             w3_real=w3_real, w3u_real=w3u_real, w4_real=w4_real, w4u_real=w4u_real,

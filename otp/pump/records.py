@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..core.component import component, q
+from ..core.component import component, q, group
 from ..propellants.propellant import Propellant
 from ..engine.records import EnginePerformance
 from ..core.units import g, K_TO_C
@@ -53,46 +53,53 @@ class PumpGeometry:
 
 @component
 class PumpPerformance:
-    propellant: Propellant
-    Q: float = q("m^3/s", "pump flow rate", alt=("L/s", lambda x: x * 1000))
-    rpm: float = q("RPM", "pump rotational speed")
-    p_upstream: float = q("bar", "pump upstream pressure")
-    T_upstream: float = q("K", "pump upstream temperature", alt=("C", lambda x: x + K_TO_C))
-    omega: float = q("rad/s", "pump rotational speed in rad/s")
-    mdot: float = q("kg/s", "pump mass flow rate")
-    dp: float = q("bar", "pump pressure rise")
+    with group("Inputs"):
+        propellant: Propellant = q("pumped propellant")
+        Q: float = q("m^3/s", "pump flow rate", alt=("L/s", lambda x: x * 1000))
+        rpm: float = q("RPM", "pump rotational speed")
+        p_upstream: float = q("bar", "pump upstream pressure")
+        T_upstream: float = q("K", "pump upstream temperature", alt=("C", lambda x: x + K_TO_C))
+    with group("Outputs"):
+        omega: float = q("rad/s", "pump rotational speed in rad/s")
+        mdot: float = q("kg/s", "pump mass flow rate")
+        dp: float = q("bar", "pump pressure rise")
+
     flow_coeff_inlet: float = q("-", "impeller inlet flow coefficient")
     flow_coeff_outlet: float = q("-", "impeller outlet flow coefficient")
     head_coeff: float = q("-", "pump head coefficient")
-    H_total_real: float = q("m", "pump head")
-    H_static_real: float = q("m", "pump ideal head")
-    H_loss_diff: float = q("m", "pump diffuser head loss")
-    eta_hydraulic: float = q("-", "pump hydraulic efficiency")
-    P_shaft: float = q("W", "pump shaft power", alt=("kW", lambda x: x / 1000))
-    P_hydraulic: float = q("W", "pump hydraulic power", alt=("kW", lambda x: x / 1000))
-    P_disc_friction: float = q("W", "pump disc friction power", alt=("kW", lambda x: x / 1000))
-    P_useful: float = q("W", "pump useful power", alt=("kW", lambda x: x / 1000))
-    eta_power: float = q("-", "pump power efficiency")
-    torque: float = q("N*m", "pump torque")
-    v_inlet: float = q("m/s", "pump inlet velocity")
-    u_1: float = q("m/s", "impeller inlet blade speed")
-    w_1: float = q("m/s", "impeller inlet relative velocity")
-    v_1: float = q("m/s", "impeller inlet velocity")
-    u_2: float = q("m/s", "impeller outlet blade speed")
-    w_2: float = q("m/s", "impeller outlet relative velocity")
-    v_2: float = q("m/s", "impeller outlet velocity")
-    v_throat: float = q("m/s", "diffuser throat velocity")
-    v_outlet: float = q("m/s", "pump outlet velocity")
-    p_inlet: float = q("bar", "pump inlet static pressure")
-    p_1: float = q("bar", "impeller inlet static pressure")
-    p_2: float = q("bar", "impeller outlet static pressure")
-    p_2_total: float = q("bar", "impeller outlet total pressure")
-    p_throat: float = q("bar", "diffuser throat static pressure")
-    p_outlet: float = q("bar", "pump outlet total pressure")
-    p_outlet_static: float = q("bar", "pump outlet static pressure")
-    npsh_a_upstream: float = q("m", "pump upstream NPSH available")
-    npsh_r_inlet: float = q("m", "pump inlet NPSH required")
-    npsh_r_throat: float = q("m", "pump throat NPSH required")
-    npsh_r_ai_low: float = q("m", "pump inlet NPSH required (low lam_w)")
-    npsh_r_ai_high: float = q("m", "pump inlet NPSH required (high lam_w)")
-    suction_specific_speed: float = q("-", "pump suction specific speed")
+    with group("Head and Power"):
+        H_total_real: float = q("m", "pump head")
+        H_static_real: float = q("m", "pump ideal head")
+        H_loss_diff: float = q("m", "pump diffuser head loss")
+        eta_hydraulic: float = q("-", "pump hydraulic efficiency")
+        P_shaft: float = q("W", "pump shaft power", alt=("kW", lambda x: x / 1000))
+        P_hydraulic: float = q("W", "pump hydraulic power", alt=("kW", lambda x: x / 1000))
+        P_disc_friction: float = q("W", "pump disc friction power", alt=("kW", lambda x: x / 1000))
+        P_useful: float = q("W", "pump useful power", alt=("kW", lambda x: x / 1000))
+        eta_power: float = q("-", "pump power efficiency")
+        torque: float = q("N*m", "pump torque")
+    with group("Velocities"):
+        v_inlet: float = q("m/s", "pump inlet velocity")
+        u_1: float = q("m/s", "impeller inlet blade speed")
+        w_1: float = q("m/s", "impeller inlet relative velocity")
+        v_1: float = q("m/s", "impeller inlet velocity")
+        u_2: float = q("m/s", "impeller outlet blade speed")
+        w_2: float = q("m/s", "impeller outlet relative velocity")
+        v_2: float = q("m/s", "impeller outlet velocity")
+        v_throat: float = q("m/s", "diffuser throat velocity")
+        v_outlet: float = q("m/s", "pump outlet velocity")
+    with group("Pressures"):
+        p_inlet: float = q("bar", "pump inlet static pressure")
+        p_1: float = q("bar", "impeller inlet static pressure")
+        p_2: float = q("bar", "impeller outlet static pressure")
+        p_2_total: float = q("bar", "impeller outlet total pressure")
+        p_throat: float = q("bar", "diffuser throat static pressure")
+        p_outlet: float = q("bar", "pump outlet total pressure")
+        p_outlet_static: float = q("bar", "pump outlet static pressure")
+    with group("NPSH"):
+        npsh_a_upstream: float = q("m", "pump upstream NPSH available")
+        npsh_r_inlet: float = q("m", "pump inlet NPSH required")
+        npsh_r_throat: float = q("m", "pump throat NPSH required")
+        npsh_r_ai_low: float = q("m", "pump inlet NPSH required (low lam_w)")
+        npsh_r_ai_high: float = q("m", "pump inlet NPSH required (high lam_w)")
+        suction_specific_speed: float = q("-", "pump suction specific speed")

@@ -1,11 +1,13 @@
+from typing import Tuple
+
 import numpy as np
 
-from .records import TurbineRequirements, TurbineChoices, TurbineGeometry, TurbineInletGas
-from .analysis import nozzle_velocity_coeff, rotor_velocity_coeff, windage_power
+from .records import TurbineRequirements, TurbineChoices, TurbineGeometry, TurbineInletGas, TurbinePerformance
+from .analysis import nozzle_velocity_coeff, rotor_velocity_coeff, windage_power, Turbine
 from ..core.units import BAR
 import scipy.optimize as opt
 
-def size_turbine(turbine_req: TurbineRequirements, turbine_choices: TurbineChoices, turbine_inlet_gas: TurbineInletGas, mdot: float, max_iter: int=20, tol:float = 1e-2) -> TurbineGeometry:
+def size_turbine(turbine_req: TurbineRequirements, turbine_choices: TurbineChoices, turbine_inlet_gas: TurbineInletGas, mdot: float, max_iter: int=20, tol:float = 1e-2) -> Tuple[TurbineGeometry, TurbinePerformance]:
     P_target = turbine_req.P_req
     rpm = turbine_req.rpm
     beta_deg = turbine_choices.beta_deg
@@ -22,7 +24,7 @@ def size_turbine(turbine_req: TurbineRequirements, turbine_choices: TurbineChoic
 
     stator = stator_thermal_gg if turbine_inlet_gas.model is not None else stator_thermal_ideal
 
-    P_req = 2 * P_target # Arbitrary 2x iteration starting point
+    P_req = P_target
 
     for _ in range(max_iter):
         # Useful enthalpy drop
@@ -44,6 +46,7 @@ def size_turbine(turbine_req: TurbineRequirements, turbine_choices: TurbineChoic
         w3u_real = c3u_real - u
         w3_real = np.sqrt(w3u_real**2 + c3m_real**2)
         Mr =  w3_real / a_3
+        # print(f"dB={dB:.1f}, Mr={Mr:.2f}, c3u_real={c3u_real:.1f}, u={u:.1f}, w3_real={w3_real:.1f}, a_3={a_3:.1f}, c3_real={c3_real:.1f}")
         phi_r = rotor_velocity_coeff(dB, Mr)
 
         w4_real = w3_real * phi_r
@@ -52,10 +55,11 @@ def size_turbine(turbine_req: TurbineRequirements, turbine_choices: TurbineChoic
 
         p_v = windage_power(doa, rho_3, rpm, d_mean, blade_height)
 
-        P_shaft = mdot * u * (c3u_real - c4u_real) - p_v
+        P_euler = mdot * u * (c3u_real - c4u_real)
+        P_shaft = P_euler - p_v
         if P_shaft <= 0:
             raise ValueError(
-                f"No net power: windage {p_v:.0f} W exceeds the Euler work. "
+                f"No net power: windage {p_v:.0f} W exceeds the Euler work of {P_euler:.0f} W. "
                 f"Lower the admission fraction or the speed.")
 
         if abs(P_shaft - P_target) <= tol * P_target:
@@ -65,7 +69,7 @@ def size_turbine(turbine_req: TurbineRequirements, turbine_choices: TurbineChoic
             A_3_total = A_throat_total * eps
             nozzle_exit_length = eps * A_throat_total / n_nozzles / blade_height
 
-            return TurbineGeometry(
+            geometry = TurbineGeometry(
                 d_mean=d_mean,
                 beta_deg=beta_deg,
                 doa=doa,
@@ -76,6 +80,9 @@ def size_turbine(turbine_req: TurbineRequirements, turbine_choices: TurbineChoic
                 nozzle_throat_length=nozzle_throat_length,
                 nozzle_exit_length=nozzle_exit_length
             )
+
+            performance = Turbine(turbine_req, turbine_choices, geometry).point_performance(turbine_inlet_gas, rpm, turbine_inlet_gas.p01/p_ratio)
+            return geometry, performance
         P_req *= P_target / P_shaft
     raise ValueError(
         f"Failed to converge on turbine geometry after {max_iter} iterations "
