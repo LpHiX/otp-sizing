@@ -10,20 +10,20 @@ from ..core.units import BAR, K_TO_C, P_A_BAR, g
 @component
 class EngineRequirements:
     F:  float = q("N", "thrust")
-    p_a_bar: float = q("bar", "ambient pressure")
+    p_a: float = q("bar", "ambient pressure", alt=("bar", lambda x: x * 1e-5))
 
 @component
 class EngineChoices:
     OF: float = q("-", "mixture ratio")
-    p_c_bar: float = q("bar", "chamber pressure")
-    p_e_bar: float = q("bar", "exit pressure")
+    p_c: float = q("Pa", "chamber pressure", alt=("bar", lambda x: x * 1e-5))
+    p_e: float = q("Pa", "exit pressure", alt=("bar", lambda x: x * 1e-5))
     perc_film: float = q("-", "percentage of film cooling (of core total core mdot)")
     fuel_name: str = q("-", "fuel name", default="RP-1")
     oxidizer_name: str = q("-", "oxidizer name", default="LOX")
 
 @component
 class InjectorChoices:
-    inj_dp: float = q("bar", "injector pressure drop")
+    inj_dp: float = q("Pa", "injector pressure drop", alt=("bar", lambda x: x * 1e-5))
     fuel_cd: float = q("-", "fuel injector discharge coefficient")
     ox_cd: float = q("-", "oxidizer injector discharge coefficient")
 
@@ -50,8 +50,8 @@ class EnginePerformance:
     with group("Inputs"):
         fuel: Propellant = q("fuel")
         oxidizer: Propellant = q("oxidizer")
-        p_c_bar: float = q("bar", "chamber pressure")
-        p_a_bar: float = q("bar", "ambient pressure")
+        p_c: float = q("Pa", "chamber pressure", alt=("bar", lambda x: x * 1e-5))
+        p_a: float = q("Pa", "ambient pressure", alt=("bar", lambda x: x * 1e-5))
         OF: float = q("-", "mixture ratio")
     with group("Thrust and ISP"):
         F_amb: float = q("N", "delivered thrust", alt=("kN", lambda x: x / 1000))
@@ -69,10 +69,10 @@ class EnginePerformance:
         Cf_vac: float = q("-", "thrust coefficient in vacuum")
         Cf_sl: float = q("-", "thrust coefficient at sea level")
     with group("Injector pressures"):
-        p_fuel_injdp: float = q("bar", "fuel injector pressure drop")
-        p_ox_injdp: float = q("bar", "oxidizer injector pressure drop")
-        p_fuel_preinj: float = q("bar", "fuel pre-injector pressure")
-        p_ox_preinj: float = q("bar", "oxidizer pre-injector pressure")
+        p_fuel_injdp: float = q("Pa", "fuel injector pressure drop", alt=("bar", lambda x: x * 1e-5))
+        p_ox_injdp: float = q("Pa", "oxidizer injector pressure drop", alt=("bar", lambda x: x * 1e-5))
+        p_fuel_preinj: float = q("Pa", "fuel pre-injector pressure", alt=("bar", lambda x: x * 1e-5))
+        p_ox_preinj: float = q("Pa", "oxidizer pre-injector pressure", alt=("bar", lambda x: x * 1e-5))
         stiffness_fuel: float = q("-", "fuel injector stiffness")
         stiffness_ox: float = q("-", "oxidizer injector stiffness")
     with group("Gas properties"):
@@ -92,7 +92,7 @@ class PropCEA:
             fuelName = self.fuel.cea_name,
             isp_units='sec',
             cstar_units = 'm/s',
-            pressure_units='Bar',
+            pressure_units='Pa',
             temperature_units='K',
             sonic_velocity_units='m/s',
             enthalpy_units='J/g',
