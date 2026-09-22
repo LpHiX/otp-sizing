@@ -5,12 +5,12 @@ from pyfluids import Fluid, FluidsList, Input
 
 from ..core.component import component, q, group
 from ..propellants.propellant import Propellant
-from ..core.units import BAR, K_TO_C, P_A_BAR, g
+from ..core.units import BAR, K_TO_C, P_A, g
 
 @component
 class EngineRequirements:
     F:  float = q("N", "thrust")
-    p_a: float = q("bar", "ambient pressure", alt=("bar", lambda x: x * 1e-5))
+    p_a: float = q("Pa", "ambient pressure", alt=("bar", lambda x: x * 1e-5))
 
 @component
 class EngineChoices:

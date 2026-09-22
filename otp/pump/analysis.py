@@ -77,7 +77,7 @@ class Pump:
 
         # This analysis assumes incompressible with density at upstream conditions for now.
 
-        upstream = propellant.fluid.with_state(Input.pressure(p_upstream * 1e5),Input.temperature(T_upstream + K_TO_C))
+        upstream = propellant.fluid.with_state(Input.pressure(p_upstream),Input.temperature(T_upstream + K_TO_C))
         omega = rpm * 2 * np.pi / 60
         mdot = Q * upstream.density
         v_inlet = Q / (np.pi * self.geom.d_inlet**2 / 4)
@@ -106,19 +106,19 @@ class Pump:
             torque = P_shaft / omega
 
             head_coeff = 2 * H_total_real * g / u_2**2
-            p_inlet = p_upstream - 0.5 * upstream.density * v_inlet**2 / 1e5
-            p_1 = p_upstream - 0.5 * upstream.density * v_1**2 / 1e5
-            p_2_total = p_upstream + H_euler * upstream.density * g / 1e5
-            p_2 = p_2_total - 0.5 * upstream.density * v_2**2 / 1e5
-            p_throat = p_2_total - 0.5 * upstream.density * v_throat**2 / 1e5
-            p_outlet_static = p_2_total - H_loss_diff * upstream.density * g / 1e5 - 0.5 * upstream.density * v_outlet**2 / 1e5
-            p_outlet = p_upstream + H_total_real * upstream.density * g / 1e5
+            p_inlet = p_upstream - 0.5 * upstream.density * v_inlet**2
+            p_1 = p_upstream - 0.5 * upstream.density * v_1**2
+            p_2_total = p_upstream + H_euler * upstream.density * g
+            p_2 = p_2_total - 0.5 * upstream.density * v_2**2
+            p_throat = p_2_total - 0.5 * upstream.density * v_throat**2
+            p_outlet_static = p_2_total - H_loss_diff * upstream.density * g - 0.5 * upstream.density * v_outlet**2
+            p_outlet = p_upstream + H_total_real * upstream.density * g
             dp = p_outlet - p_upstream
 
-            p_sat = propellant.fluid.with_state(Input.temperature(T_upstream + K_TO_C), Input.quality(0)).pressure / 1e5
-            npsh_a_upstream = (p_upstream - p_sat) * 1e5 / (upstream.density * g)
-            npsh_r_inlet = (p_upstream - p_1) * 1e5 / (upstream.density * g)
-            npsh_r_throat = (p_upstream - p_throat) * 1e5 / (upstream.density * g)
+            p_sat = propellant.fluid.with_state(Input.temperature(T_upstream + K_TO_C), Input.quality(0)).pressure
+            npsh_a_upstream = (p_upstream - p_sat) / (upstream.density * g)
+            npsh_r_inlet = (p_upstream - p_1) / (upstream.density * g)
+            npsh_r_throat = (p_upstream - p_throat) / (upstream.density * g)
 
             lam_c = 1.1
             lam_w_low = 0.1
@@ -133,8 +133,8 @@ class Pump:
         if method == "lock":
             H_total_real, H_static_real, H_loss_diff, h_0, C_h, dummy_1a, dummy_1b, dummy_1c, Q_ops = lock_head(self.geom, Q, omega, self.choices.n_blades)
             H_throat = H_static_real + H_loss_diff - 8 * Q**2 * (self.geom.d_throat**-4 - self.geom.d_outlet**-4) / (np.pi**2 * g)
-            p_sat = propellant.fluid.with_state(Input.temperature(T_upstream + K_TO_C), Input.quality(0)).pressure / 1e5
-            npsh_a_upstream = (p_upstream - p_sat) * 1e5 / (upstream.density * g)
+            p_sat = propellant.fluid.with_state(Input.temperature(T_upstream + K_TO_C), Input.quality(0)).pressure
+            npsh_a_upstream = (p_upstream - p_sat) / (upstream.density * g)
 
             if -npsh_a_upstream > H_throat:
                 H_loss_diff = H_total_real + H_loss_diff

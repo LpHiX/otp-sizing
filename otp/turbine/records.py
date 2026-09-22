@@ -40,7 +40,7 @@ class TurbineGeometry:
 
 @component
 class TurbineInletGas:
-    p01: float = q("bar", "stagnation pressure")
+    p01: float = q("Pa", "stagnation pressure", alt=("bar", lambda x: x * 1e-5))
     T01: float = q("K", "stagnation temperature")
     R: float = q("J/kgK", "gas constant")
     gamma: float = q("-", "heat capacity ratio")
@@ -55,18 +55,18 @@ class TurbinePerformance:
         omega: float = q("rad/s", "shaft rotational speed in rad/s")
         u: float = q("m/s", "mean blade speed")
         mdot: float = q("kg/s", "turbine mass flow")
-        p_amb_bar: float = q("bar", "turbine exhaust ambient pressure")
+        p_amb: float = q("Pa", "turbine exhaust ambient pressure", alt=("bar", lambda x: x * 1e-5))
 
     with group("Thermodynamics"):
         eps: float = q("-", "nozzle exit over throat area ratio")
         p_ratio: float = q("-", "nozzle stator pressure ratio")
-        p01: float = q("bar", "stagnation pressure at turbine inlet")
+        p01: float = q("Pa", "stagnation pressure at turbine inlet", alt=("bar", lambda x: x * 1e-5))
         T01: float = q("K", "stagnation temperature at turbine inlet")
-        p_throat: float = q("bar", "stagnation pressure at nozzle throat")
+        p_throat: float = q("Pa", "stagnation pressure at nozzle throat", alt=("bar", lambda x: x * 1e-5))
         T_throat: float = q("K", "stagnation temperature at nozzle throat")
         a_throat: float = q("m/s", "sonic velocity at nozzle throat")
         rho_throat: float = q("kg/m^3", "density at nozzle throat")
-        p3: float = q("bar", "stagnation pressure at nozzle exit")
+        p3: float = q("Pa", "stagnation pressure at nozzle exit", alt=("bar", lambda x: x * 1e-5))
         T3: float = q("K", "stagnation temperature at nozzle exit")
         M3: float = q("-", "nozzle exit Mach number")
         Mr: float = q("-", "rotor inlet relative Mach number")

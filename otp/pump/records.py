@@ -16,16 +16,16 @@ class PumpRequirements:
         if side == "ox":
             propellant = engine_perf.oxidizer
             mdot = engine_perf.mdot_ox
-            p_discharge_bar = engine_perf.p_ox_preinj
+            p_discharge = engine_perf.p_ox_preinj
         elif side == "fuel":
             propellant = engine_perf.fuel
             mdot = engine_perf.mdot_fuel
-            p_discharge_bar = engine_perf.p_fuel_preinj
+            p_discharge = engine_perf.p_fuel_preinj
         else:
             raise ValueError(f"Invalid pump side: {side}")
 
         Q_req = mdot / propellant.tank_fluid.density
-        H_req = (p_discharge_bar - propellant.p_tank) * 1e5 / (propellant.tank_fluid.density * g)
+        H_req = (p_discharge - propellant.p_tank) / (propellant.tank_fluid.density * g)
 
         return PumpRequirements(propellant=propellant, Q_req=Q_req, H_req=H_req)
 
@@ -57,12 +57,12 @@ class PumpPerformance:
         propellant: Propellant = q("pumped propellant")
         Q: float = q("m^3/s", "pump flow rate", alt=("L/s", lambda x: x * 1000))
         rpm: float = q("RPM", "pump rotational speed")
-        p_upstream: float = q("bar", "pump upstream pressure")
+        p_upstream: float = q("Pa", "pump upstream pressure", alt=("bar", lambda x: x * 1e-5))
         T_upstream: float = q("K", "pump upstream temperature", alt=("C", lambda x: x + K_TO_C))
     with group("Outputs"):
         omega: float = q("rad/s", "pump rotational speed in rad/s")
         mdot: float = q("kg/s", "pump mass flow rate")
-        dp: float = q("bar", "pump pressure rise")
+        dp: float = q("Pa", "pump pressure rise", alt=("bar", lambda x: x * 1e-5))
 
     flow_coeff_inlet: float = q("-", "impeller inlet flow coefficient")
     flow_coeff_outlet: float = q("-", "impeller outlet flow coefficient")
@@ -89,13 +89,13 @@ class PumpPerformance:
         v_throat: float = q("m/s", "diffuser throat velocity")
         v_outlet: float = q("m/s", "pump outlet velocity")
     with group("Pressures"):
-        p_inlet: float = q("bar", "pump inlet static pressure")
-        p_1: float = q("bar", "impeller inlet static pressure")
-        p_2: float = q("bar", "impeller outlet static pressure")
-        p_2_total: float = q("bar", "impeller outlet total pressure")
-        p_throat: float = q("bar", "diffuser throat static pressure")
-        p_outlet: float = q("bar", "pump outlet total pressure")
-        p_outlet_static: float = q("bar", "pump outlet static pressure")
+        p_inlet: float = q("Pa", "pump inlet static pressure", alt=("bar", lambda x: x * 1e-5))
+        p_1: float = q("Pa", "impeller inlet static pressure", alt=("bar", lambda x: x * 1e-5))
+        p_2: float = q("Pa", "impeller outlet static pressure", alt=("bar", lambda x: x * 1e-5))
+        p_2_total: float = q("Pa", "impeller outlet total pressure", alt=("bar", lambda x: x * 1e-5))
+        p_throat: float = q("Pa", "diffuser throat static pressure", alt=("bar", lambda x: x * 1e-5))
+        p_outlet: float = q("Pa", "pump outlet total pressure", alt=("bar", lambda x: x * 1e-5))
+        p_outlet_static: float = q("Pa", "pump outlet static pressure", alt=("bar", lambda x: x * 1e-5))
     with group("NPSH"):
         npsh_a_upstream: float = q("m", "pump upstream NPSH available")
         npsh_r_inlet: float = q("m", "pump inlet NPSH required")

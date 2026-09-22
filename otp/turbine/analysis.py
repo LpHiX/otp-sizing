@@ -2,7 +2,6 @@ import numpy as np
 import scipy.optimize as opt
 
 from ..core.component import component
-from ..core.units import BAR
 from .records import (TurbineRequirements, TurbineChoices, TurbineGeometry,
                       TurbineInletGas, TurbinePerformance)
 
@@ -17,9 +16,12 @@ def gas_state_at_eps(gas: TurbineInletGas, eps: float) -> tuple[float, float, fl
         p_ratio = cea.get_PcOvPe(Pc=p01, MR=OF, eps=eps)
         h01, _, h3 = [h * 1000.0 for h in cea.get_Enthalpies(Pc=p01, MR=OF, eps=eps, frozen=0)]
         c3_ideal = np.sqrt(2.0 * (h01 - h3))
-        return a_throat, a_3, rho_throat, rho_3, p_ratio, M3, c3_ideal
+        _, T_throat, T3 = cea.get_Temperatures(Pc=p01, MR=OF, eps=eps)
+        p_throat = p01 / cea.get_Throat_PcOvPe(Pc=p01, MR=OF)
+        p3 = p01 / p_ratio
+        return a_throat, a_3, rho_throat, rho_3, p_ratio, M3, c3_ideal, p_throat, T_throat, p3, T3
 
-    gamma, R, T01, p01 = gas.gamma, gas.R, gas.T01, gas.p01 * BAR
+    gamma, R, T01, p01 = gas.gamma, gas.R, gas.T01, gas.p01
 
     def area_ratio(M: float) -> float:
         return (1 / M) * ((2 / (gamma + 1)) * (1 + 0.5 * (gamma - 1) * M**2)) ** ((gamma + 1) / (2 * (gamma - 1)))
@@ -31,7 +33,7 @@ def gas_state_at_eps(gas: TurbineInletGas, eps: float) -> tuple[float, float, fl
     c3_ideal = M3 * a_3
     p_ratio = (1 + 0.5 * (gamma - 1) * M3**2) ** (gamma / (gamma - 1))
     rho_3 = (p01 / p_ratio) / (R * T3)
-    p3 = p01 / p_ratio / BAR
+    p3 = p01 / p_ratio
 
     T_throat = T01 / (1 + 0.5 * (gamma - 1))
     p_throat = p01 * (2 / (gamma + 1)) ** (gamma / (gamma - 1))
@@ -40,15 +42,15 @@ def gas_state_at_eps(gas: TurbineInletGas, eps: float) -> tuple[float, float, fl
     return a_throat, a_3, rho_throat, rho_3, p_ratio, M3, c3_ideal, p_throat, T_throat, p3, T3
 
 
-def deltah_isentropic_ta(gas: TurbineInletGas, p_amb_bar: float) -> float:
+def deltah_isentropic_ta(gas: TurbineInletGas, p_amb: float) -> float:
     if gas.model is not None:
         cea, p01, OF = gas.model.cea, gas.p01, gas.OF
-        eps_amb = cea.get_eps_at_PcOvPe(Pc=p01, MR=OF, PcOvPe=p01 / p_amb_bar, frozen=0)
+        eps_amb = cea.get_eps_at_PcOvPe(Pc=p01, MR=OF, PcOvPe=p01 / p_amb, frozen=0)
         h01, _, h_amb = [h * 1000.0 for h in cea.get_Enthalpies(Pc=p01, MR=OF, eps=eps_amb, frozen=0)]
         return h01 - h_amb
 
     cp = gas.gamma * gas.R / (gas.gamma - 1)
-    T_amb_is = gas.T01 * (p_amb_bar / gas.p01) ** ((gas.gamma - 1) / gas.gamma)
+    T_amb_is = gas.T01 * (p_amb / gas.p01) ** ((gas.gamma - 1) / gas.gamma)
     return cp * (gas.T01 - T_amb_is)
 
 
@@ -78,7 +80,7 @@ class Turbine:
     choices: TurbineChoices
     geom: TurbineGeometry
 
-    def point_performance(self, gas: TurbineInletGas, rpm: float, p_amb_bar: float) -> TurbinePerformance:
+    def point_performance(self, gas: TurbineInletGas, rpm: float, p_amb: float) -> TurbinePerformance:
         beta = np.deg2rad(self.geom.beta_deg)
         omega = rpm * 2 * np.pi / 60
         u = omega * self.geom.d_mean / 2
@@ -109,14 +111,14 @@ class Turbine:
         torque = P_shaft / omega
 
         deltah_useful = P_shaft / mdot
-        deltah_is_ta = deltah_isentropic_ta(gas, p_amb_bar)
+        deltah_is_ta = deltah_isentropic_ta(gas, p_amb)
         c_0 = np.sqrt(2 * deltah_is_ta)
 
         # Does the blade height pass the flow the choked throat is delivering?
         mdot_continuity = self.geom.doa * rho_3 * c3m_real * self.geom.d_mean * np.pi * self.geom.blade_height
 
         return TurbinePerformance(
-            gas=gas, rpm=rpm, omega=omega, u=u, mdot=mdot, p_amb_bar=p_amb_bar,
+            gas=gas, rpm=rpm, omega=omega, u=u, mdot=mdot, p_amb=p_amb,
             eps=eps,p_ratio=p_ratio,p01=gas.p01,T01=gas.T01,p_throat=p_throat,T_throat=T_throat,a_throat=a_throat,rho_throat=rho_throat,p3=p3,T3=T3,M3=M3,Mr=Mr,a_3=a_3,rho_3=rho_3,
             phi_n=phi_n, phi_r=phi_r,
             c3_ideal=c3_ideal, c3_real=c3_real, c3u_real=c3u_real, c3m_real=c3m_real,

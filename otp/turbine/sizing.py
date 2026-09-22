@@ -4,7 +4,6 @@ import numpy as np
 
 from .records import TurbineRequirements, TurbineChoices, TurbineGeometry, TurbineInletGas, TurbinePerformance
 from .analysis import nozzle_velocity_coeff, rotor_velocity_coeff, windage_power, Turbine
-from ..core.units import BAR
 import scipy.optimize as opt
 
 def size_turbine(turbine_req: TurbineRequirements, turbine_choices: TurbineChoices, turbine_inlet_gas: TurbineInletGas, mdot: float, max_iter: int=20, tol:float = 1e-2) -> Tuple[TurbineGeometry, TurbinePerformance]:
@@ -124,7 +123,7 @@ def stator_thermal_gg(turbine_inlet_gas: TurbineInletGas, c3_ideal: float, eps_b
     return a_throat, a_3, rho_throat, rho_3, eps, p_ratio, M3
 
 def stator_thermal_ideal(turbine_inlet_gas: TurbineInletGas, c3_ideal: float) -> tuple[float, float, float, float, float, float, float]:
-    p01 = turbine_inlet_gas.p01 * BAR   # bar -> Pa, once, so every density below is SI
+    p01 = turbine_inlet_gas.p01
     T01 = turbine_inlet_gas.T01
     R = turbine_inlet_gas.R
     gamma = turbine_inlet_gas.gamma
