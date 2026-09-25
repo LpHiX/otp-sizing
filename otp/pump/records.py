@@ -63,6 +63,7 @@ class PumpPerformance:
         omega: float = q("rad/s", "pump rotational speed in rad/s")
         mdot: float = q("kg/s", "pump mass flow rate")
         dp: float = q("Pa", "pump pressure rise", alt=("bar", lambda x: x * 1e-5))
+        specific_speed: float = q("-", "pump specific speed")
 
     flow_coeff_inlet: float = q("-", "impeller inlet flow coefficient")
     flow_coeff_outlet: float = q("-", "impeller outlet flow coefficient")
