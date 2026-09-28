@@ -38,14 +38,8 @@ class Channel:
         return float(seg.std()) if seg.size else float("nan")
 
 @component
-class Rig:
-    engine_geometry: engine_geometry = q("", )
-
-@component
 class Run:
     run_id: str = q("", "e.g. 20260701-111")
-    campaign: str = q("", "e.g. OT-2")
-    rig: Rig
     channels: dict = q("", "canonical name -> Channel")
     meta: dict = q("", "raw file attributes", default_factory=dict)
     notes: str = q("", "what this run was", default="")
