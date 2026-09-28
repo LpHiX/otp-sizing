@@ -23,7 +23,7 @@ PUMP_GEOM = PumpGeometry(d_inlet=0.0298 / 1.2,
                     d_3=0.0, 
                     b_3=0.0, 
                     s_ax=0.0)            # unused
-PUMP = Pump(PumpRequirements(None, 1.2e-3, 760.0), PumpChoices(24e3, 6, 1.0), PUMP_GEOM)
+PUMP = Pump(PumpRequirements(None, 1.2e-3, 760.0), PumpChoices(24e3, 6, 1, coeff_p = 0.2), PUMP_GEOM)
 
 from pathlib import Path
 DATA_PATH = Path(__file__).parent / '20260701-111.h5'

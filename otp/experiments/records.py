@@ -37,6 +37,14 @@ class Channel:
         seg = self._finite(t0, t1)
         return float(seg.std()) if seg.size else float("nan")
 
+    def max(self, t0: float, t1: float) -> float:
+        seg = self._finite(t0, t1)
+        return float(seg.max()) if seg.size else float("nan")
+
+    def min(self, t0: float, t1: float) -> float:
+        seg = self._finite(t0, t1)
+        return float(seg.min()) if seg.size else float("nan")
+
 @component
 class Run:
     run_id: str = q("", "e.g. 20260701-111")
