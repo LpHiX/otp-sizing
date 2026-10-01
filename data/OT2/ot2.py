@@ -9,8 +9,8 @@ from otp.experiments.records import Run
 
 
 WATER_RHO = 1000.0
-CD = 0.71
-D_OR = 0.004
+CD = 0.8
+D_OR = 0.0049
 A_THROAT = np.pi / 4 * D_OR ** 2
 
 PUMP_GEOM = PumpGeometry(d_inlet=0.0298 / 1.2,
